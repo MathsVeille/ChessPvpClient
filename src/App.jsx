@@ -19,7 +19,7 @@ export default function App() {
     <>
     <Canvas>
 
-    <Stats/>
+    {/* <Stats/> */}
     
     <axesHelper scale={[2,2,2]}/>
     

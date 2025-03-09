@@ -8,7 +8,7 @@ import { GLTFLoader } from 'three/examples/jsm/Addons.js';
 import Pawn from './Pawn';
 import { update } from 'three/examples/jsm/libs/tween.module.js';
 
-export default function Player({myPos}){
+export default function Player({myWantedPos, myWantedPosChanged}){
 
     useEffect(() => {
         console.log("player re render");
@@ -47,7 +47,7 @@ export default function Player({myPos}){
             pion.current.position.x = Math.round(pion.current.position.x);
         }
         //send position to server
-        myPos.current = {x:pion.current.position.x, z:pion.current.position.z};
+        //myPos.current = {x:pion.current.position.x, z:pion.current.position.z};
   
     });
 
@@ -57,11 +57,16 @@ export default function Player({myPos}){
   
         if(event.key === "ArrowUp" && x.current <=1){
           x.current += 1;
-          console.log("added to z");
+          console.log("added to x");
+          //send position to server, on veut bouger d'une case donc x:1
+          myWantedPos.current = {x:1, z:0};
+          myWantedPosChanged();
           
         }
         else if(event.key === "ArrowDown" && x.current >=-1){
           x.current -= 1;
+          myWantedPos.current = {x:-1, z:0};
+          myWantedPosChanged();
         }
         
       }
@@ -81,6 +86,8 @@ export default function Player({myPos}){
            <OrbitControls/>
   
         </group>    
+
+
       </>
     );
 }
