@@ -8,7 +8,7 @@ import { GLTFLoader } from 'three/examples/jsm/Addons.js';
 import Pawn from './Pawn';
 import { update } from 'three/examples/jsm/libs/tween.module.js';
 
-export default function Player({myWantedPos, myWantedPosChanged}){
+export default function Player({myWantedPos, myWantedPosChanged, position}){
 
     useEffect(() => {
         console.log("player re render");
@@ -77,7 +77,7 @@ export default function Player({myWantedPos, myWantedPosChanged}){
   
     return(
       <>
-        <group ref={pion} position={[1, 0, 1]}>
+        <group ref={pion} position={[position.x, 0, position.z]}>
          
           <PerspectiveCamera makeDefault={true} position={[0,1,-2]} ref={camera}/>
         

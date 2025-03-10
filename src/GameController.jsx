@@ -12,10 +12,20 @@ import Enemy_pawn from './Enemy_pawn';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 
-//const socket = io("http://207.154.195.241:3001/");
+//const socket = io("http://209.38.188.182:3001/"); 
 //const socket = io("http://localhost:3001");
 
 export default function GameController(){
+
+
+        const [positionChosen, setChosen] = useState({x:-1,z:-1});
+
+        useEffect(()=>{
+            if (positionChosen.x !== -1){
+                console.log("ONCOMMENCE");
+                socket.current.emit("player_init", positionChosen.x, positionChosen.z);
+            }
+        },[positionChosen])
 
         
         const playersClientDesieredPositions = useRef(new Map()); //[key: id, value: {ref: reference de l'objet 3d, x:change_wanted, z:change_wanted}]
@@ -36,9 +46,9 @@ export default function GameController(){
 
         useEffect(() => {
 
-            
 
-            socket.current = io("http://localhost:3001");
+
+            socket.current = io("http://localhost:3001")
 
             //on close tout si fenetre fermée
             window.addEventListener('beforeunload', ()=>{
@@ -108,7 +118,10 @@ export default function GameController(){
                 playersClientDesieredPositions.current.delete(id);
             });
 
-          
+
+
+        
+        //Clean UP  
         return()=>{
             socket.current.off("connect");
             socket.current.off("player_pos");
@@ -116,6 +129,9 @@ export default function GameController(){
             socket.current.off("player_left");
             socket.current.off("desired_player_pos");
             socket.current.close();
+
+            
+
         }
         }, []);
 
@@ -136,6 +152,8 @@ export default function GameController(){
                     value.x -= value.x*delta;
                 }
             });
+
+            console.log(playersClientDesieredPositions.current);
            
              
         })
@@ -144,8 +162,10 @@ export default function GameController(){
     return(
         <>
    
+            <Suspense>
+                <Chessboard setChosen={setChosen}/>
+            </Suspense>
             
-            <Chessboard/>
            
                 {
                    /*  Array.from(playersClientDesieredPositions.current).map((plr)=>(
@@ -159,10 +179,12 @@ export default function GameController(){
                         
                     )) */
                 }
+            {positionChosen.x !=-1 && (
+                <Suspense key={"1fgfg"}> 
+                    <Player myWantedPos={myWantedPos} myWantedPosChanged={myWantedPosChanged} position={positionChosen}/>
+                </Suspense>
+            )}      
             
-            <Suspense key={"1fgfg"}> 
-                <Player myWantedPos={myWantedPos} myWantedPosChanged={myWantedPosChanged}/>
-            </Suspense>
 
         </>
         
