@@ -28,8 +28,7 @@ export default function GameController(){
         },[positionChosen])
 
         
-        const playersClientDesieredPositions = useRef(new Map()); //[key: id, value: {ref: reference de l'objet 3d, x:change_wanted, z:change_wanted}]
-        const [nb_players, setNbPlayers]= useState(1);
+        const playersClientDesieredPositions = useRef(new Map()); //[key: id, value: {ref: reference de l'objet 3d, x:change_wanted, z:change_wanted, speed:number, direction:""}]
         let myWantedPos = useRef({x:0, z:0});
 
         
@@ -39,7 +38,7 @@ export default function GameController(){
             
         };
 
-        const {scene} = useThree();
+        const {camera, scene} = useThree();
         
         const ennemy_pawn = useMemo(()=>(useLoader(GLTFLoader, "/assets/enemy_pawn_old/scene.gltf").scene), []); 
         const socket = useRef()
@@ -68,9 +67,14 @@ export default function GameController(){
             socket.current.on("sync", (players)=>{
                 players.forEach((plr)=>{
                     if(playersClientDesieredPositions.current.has(plr.id)){
-                        playersClientDesieredPositions.current.get(plr.id).ref.position.set(plr.x, 0.5, plr.z);
-                        playersClientDesieredPositions.current.get(plr.id).x = plr.x_change
-                        playersClientDesieredPositions.current.get(plr.id).z = plr.z_change
+                        let player = playersClientDesieredPositions.current.get(plr.id);
+                        player.ref.position.set(plr.x, 0.5, plr.z);
+                        player.x = plr.x_change;
+                        player.z = plr.z_change;
+                        player.speed = plr.speed;
+                        player.direction = plr.direction;
+                        playersClientDesieredPositions.current.set(plr.id, player);
+                        
                     }
                     
                 });
@@ -83,12 +87,45 @@ export default function GameController(){
             });
 
             socket.current.on("desired_player_pos", (id, x, z)=>{
-                console.log("player "+id +" Wants position change: "+ x, z);
-                let reference = playersClientDesieredPositions.current.get(id).ref;
                 //idem que coté serveur, on recuupere les vieux delta pos et on leur ajoute les nouveaux delata pour obtenir un delta total
-                let oldX = playersClientDesieredPositions.current.get(id).x;
-                let oldZ = playersClientDesieredPositions.current.get(id).z;
-                playersClientDesieredPositions.current.set(id, {ref:reference, x:(x+oldX), z:(z+oldZ)})
+                let player = playersClientDesieredPositions.current.get(id);
+                player.x += x;
+                player.z += z;
+                //En gros meme delire que dans playerPawn, si mouvement dans la meme direction => vitesse augmente
+
+                if(x>0){
+                    if(player.direction == "+x")player.speed += 0.4;
+                    else{
+                        player.speed = 1; 
+                        player.direction = "+x";
+                    }
+                }
+                if(x<0){
+                    if(player.direction == "-x")player.speed += 0.4;
+                    else{
+                        player.speed = 1; 
+                        player.direction = "-x";
+                    }
+                }
+                if(z>0){
+                    if(player.direction == "+z")player.speed += 0.4;
+                    else{
+                        player.speed = 1; 
+                        player.direction = "+z";
+                    }
+                }
+                if(z<0){
+                    if(player.direction == "-z")player.speed += 0.4;
+                    else{
+                        player.speed = 1; 
+                        player.direction = "-z";
+                    }
+                }
+
+               
+                playersClientDesieredPositions.current.set(id, player);
+
+
             });
                 
             
@@ -102,7 +139,7 @@ export default function GameController(){
                 clone.scale.set(0.25,0.25,0.25);
                 
 
-                playersClientDesieredPositions.current.set(player.id, {ref:clone ,x:0, z:0});
+                playersClientDesieredPositions.current.set(player.id, {ref:clone ,x:0, z:0, speed:1, direction:""});
                 clone.position.set(player.x, 0.5, player.z);
 
                 scene.add(clone);
@@ -120,6 +157,9 @@ export default function GameController(){
 
             socket.current.on("u_dead", ()=>{
                 setChosen({x:-1,z:-1});
+                camera.position.set(5,8,5);
+                camera.lookAt(4,0,4);
+                
             });
 
 
@@ -140,23 +180,49 @@ export default function GameController(){
 
         
 
-        const i = useRef(0);
+        
 
         useFrame((state, d)=>{
             let delta = Math.min(0.2, d);
-            i.current += 1;
+
             
             
-            //console.log(Array.from(playersClientDesieredPositions.current));
+            
+            
             playersClientDesieredPositions.current.forEach((value, key) => {
-                if(value.x!==0){
-                    console.log(key);
-                    value.ref.position.x += value.x*delta;
-                    value.x -= value.x*delta;
+                console.log(value.speed);
+                if(value.x > 0.05){
+                    value.ref.position.x += delta*value.speed;
+                    value.x -= delta*value.speed;
+                }
+                else if(value.x < -0.05){
+                    value.ref.position.x -= delta*value.speed;
+                    value.x += delta*value.speed;
+                }
+                else if(value.x != 0){
+                    value.x = 0;
+                    value.speed = 1;
+                    value.ref.position.x = Math.round(value.ref.position.x);
+                }
+
+
+
+                if(value.z > 0.05){
+                    value.ref.position.z += delta*value.speed;
+                    value.z -= delta*value.speed;
+                }
+                else if(value.z < -0.05){
+                    value.ref.position.z -= delta*value.speed;
+                    value.z += delta*value.speed;
+                }
+                else if(value.z != 0){
+                    value.z = 0;
+                    value.speed = 1;
+                    value.ref.position.z = Math.round(value.ref.position.z);
                 }
             });
 
-            //console.log(playersClientDesieredPositions.current);
+            
            
              
         })
