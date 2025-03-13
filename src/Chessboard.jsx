@@ -40,7 +40,7 @@ export default function Chessboard({setChosen}){
       
 
       document.addEventListener('mousedown', clicked);
-      window.addEventListener( 'pointermove', onPointerMove );
+      document.addEventListener( 'pointermove', onPointerMove );
 
       camera.position.set(5, 8, 5);
       camera.lookAt(5, 0, 5);
@@ -100,7 +100,7 @@ export default function Chessboard({setChosen}){
 
       //on clean derriere
       return()=>{
-        window.removeEventListener( 'pointermove', onPointerMove );
+        document.removeEventListener( 'pointermove', onPointerMove );
       }
         
 

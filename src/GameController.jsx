@@ -7,7 +7,7 @@ import { GLTFLoader } from 'three/examples/jsm/Addons.js';
 
 
 import Chessboard from './Chessboard';
-import Player from './Player';
+import PlayerRook from './PlayerRook';
 import Enemy_pawn from './Enemy_pawn';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
@@ -41,14 +41,14 @@ export default function GameController(){
 
         const {scene} = useThree();
         
-        const ennemy_pawn = useMemo(()=>(useLoader(GLTFLoader, "/assets/enemy_pawn/scene.gltf").scene), []); 
+        const ennemy_pawn = useMemo(()=>(useLoader(GLTFLoader, "/assets/enemy_pawn_old/scene.gltf").scene), []); 
         const socket = useRef()
 
         useEffect(() => {
 
 
 
-            socket.current = io("http://localhost:3001")
+            socket.current = io("http://localhost:3001"); 
 
             //on close tout si fenetre fermée
             window.addEventListener('beforeunload', ()=>{
@@ -118,6 +118,9 @@ export default function GameController(){
                 playersClientDesieredPositions.current.delete(id);
             });
 
+            socket.current.on("u_dead", ()=>{
+                setChosen({x:-1,z:-1});
+            });
 
 
         
@@ -153,7 +156,7 @@ export default function GameController(){
                 }
             });
 
-            console.log(playersClientDesieredPositions.current);
+            //console.log(playersClientDesieredPositions.current);
            
              
         })
@@ -181,7 +184,7 @@ export default function GameController(){
                 }
             {positionChosen.x !=-1 && (
                 <Suspense key={"1fgfg"}> 
-                    <Player myWantedPos={myWantedPos} myWantedPosChanged={myWantedPosChanged} position={positionChosen}/>
+                    <PlayerRook myWantedPos={myWantedPos} myWantedPosChanged={myWantedPosChanged} position={positionChosen}/>
                 </Suspense>
             )}      
             

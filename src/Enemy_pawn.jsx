@@ -6,7 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/Addons.js';
 
 export default function Enemy_pawn(){
 
-  const scene_pawn = useMemo(()=>useLoader(GLTFLoader, "/assets/enemy_pawn/scene.gltf"), []); 
+  const scene_pawn = useMemo(()=>useLoader(GLTFLoader, "/assets/enemy_pawn_old/scene.gltf"), []); 
   const ennemy_pawn = scene_pawn.scene;
   /*ennemy_pawn.traverse((child) => {
     if (child.isMesh) {
