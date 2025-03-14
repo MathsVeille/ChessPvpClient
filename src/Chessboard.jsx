@@ -51,8 +51,6 @@ export default function Chessboard({setChosen}){
       
     
 
-
-
       for(let j = 1; j<9; j=j+2){
         for(let i = 1; i<9; i++){
         
@@ -100,7 +98,13 @@ export default function Chessboard({setChosen}){
 
       //on clean derriere
       return()=>{
-        document.removeEventListener( 'pointermove', onPointerMove );
+        document.removeEventListener('pointermove', onPointerMove );
+        document.removeEventListener('mousedown', clicked);
+
+        casesBis.current.forEach(square => {
+          scene.remove(square)
+        });
+    
       }
         
 
@@ -113,19 +117,21 @@ const spawnDefini = useRef(0);
         //si on a pas encore choisi la case de depart
         if(!spawnDefini.current){
           raycaster.setFromCamera(pointer.current, camera);
-          const intersects = raycaster.intersectObjects(casesBis.current);
+          const intersects = raycaster.intersectObjects(casesBis.current, false);
 
-          if(intersects.length>1){
-            if(intersects[1].object.material.color.getHex() != 0xff0000){
+
+
+          if(intersects.length>0){
+            if(intersects[0].object.material.color.getHex() != 0xff0000){
               //On supprime celles qui étaient colorées
               casesColores.current.forEach(cube => {
                 cube.case.material.color.set(cube.col);
               });
               casesColores.current = [];
               //on enregistre la couleur de la case modifé
-              const couleur = intersects[1].object.material.color.getHex();
-              intersects[1].object.material.color.set(0xff0000);
-              casesColores.current.push({col:couleur, case:intersects[1].object}); 
+              const couleur = intersects[0].object.material.color.getHex();
+              intersects[0].object.material.color.set(0xff0000);
+              casesColores.current.push({col:couleur, case:intersects[0].object}); 
               audioRef.current.play();
             }
           
