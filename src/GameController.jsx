@@ -47,7 +47,7 @@ export default function GameController(){
 
 
 
-            socket.current = io("http://209.38.188.182:3001/"); 
+            socket.current = io("https://209.38.188.182:3001/"); 
 
             //on close tout si fenetre fermée
             window.addEventListener('beforeunload', ()=>{
